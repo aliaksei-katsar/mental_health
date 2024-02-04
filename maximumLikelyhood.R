@@ -1,7 +1,7 @@
 library(dplyr)
 library(ggplot2)
 
-# Calculating MLE using that it is equal to average estimator
+# Calculating MLE using that it is equal to average Estimator
 num_observations <- nrow(MentalHealth)
 yes_count <- sum(MentalHealth[["Work_Interest"]] == "Yes")
 max_like_binom <- yes_count/num_observations
