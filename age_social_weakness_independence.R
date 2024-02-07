@@ -25,7 +25,7 @@ X <- sum((exp_age_social_weakness_table - v) ^ 2 / exp_age_social_weakness_table
 
 #Rejecting null hypothesis
 df <- (n_distinct(MentalHealth$Age) - 1) * (n_distinct(MentalHealth$Social_Weakness) - 1)
-decision <- qchisq(0.95, df, lower.tail = TRUE) < X
+decision <- qchisq(0.95, df, lower.tail = TRUE) > X
 
 chisq.test(MentalHealth$Age, MentalHealth$Social_Weakness)
 

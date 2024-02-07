@@ -24,10 +24,10 @@ for (i in 1:(ncol(MentalHealth) - 1)) {
     chi2_result <- chisq.test(MentalHealth[[i]], 
                                      MentalHealth[[j]])
     
-    p_value_table_independence[i, j] <- chi2_result$p.value < 0.05
+    p_value_table_independence[i, j] <- chi2_result$p.value > 0.05
     p_value_table_independence[j, i] <- p_value_table_independence[i, j]
     
-    Xsq_value_table_independence[i, j] <- chi2_result$statistic > qchisq(0.95, chi2_result$parameter, lower.tail = TRUE)
+    Xsq_value_table_independence[i, j] <- chi2_result$statistic < qchisq(0.95, chi2_result$parameter, lower.tail = TRUE)
     Xsq_value_table_independence[j, i] <- Xsq_value_table_independence[i, j]
   }
 }
