@@ -1,5 +1,8 @@
 library(dplyr)
 library(ggplot2)
+library(tidyverse)
+
+MentalHealth = read_csv("data/MentalHealthDataSet.csv")
 
 # Calculating MLE using that it is equal to average Estimator
 num_observations <- nrow(MentalHealth)

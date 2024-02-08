@@ -1,7 +1,7 @@
 
 
 library(tidyverse)
-MentalHealth = read_csv("MentalHealthDataSet.csv")
+MentalHealth = read_csv("data/MentalHealthDataSet.csv")
 
 #Generating table with amount of people by age who have social weakness(yes/no/maybe)
 age_social_weakness_table <- MentalHealth %>%

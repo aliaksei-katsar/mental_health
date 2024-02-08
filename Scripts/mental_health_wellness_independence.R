@@ -1,7 +1,7 @@
 
 
 library(tidyverse)
-MentalHealth = read_csv("MentalHealthDataSet.csv")
+MentalHealth = read_csv("data/MentalHealthDataSet.csv")
 
 #Finding total mental health wellness of each person by calculation the amount of bad factors that he/she has
 MentalHealth_wellness <- MentalHealth %>% 

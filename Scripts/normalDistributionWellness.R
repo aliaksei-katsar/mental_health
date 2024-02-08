@@ -1,3 +1,7 @@
+
+library(tidyverse)
+MentalHealth = read_csv("data/MentalHealthDataSet.csv")
+
 #Distribution of Psychological Unwellness in histogram
 ggplot(MentalHealth_wellness, aes(x = Mental_Unwellness)) +
   geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +

@@ -1,4 +1,6 @@
 
+library(tidyverse)
+MentalHealth = read_csv("data/MentalHealthDataSet.csv")
 
 #Creating 2 empty independence tables for p-value and X^2 value
 p_value_table_independence <-

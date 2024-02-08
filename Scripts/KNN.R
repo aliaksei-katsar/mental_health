@@ -3,7 +3,7 @@ library(tidyverse)
 library(class)
 library(fastDummies)
 
-MentalHealth = read_csv("MentalHealthDataSet.csv")
+MentalHealth = read_csv("data/MentalHealthDataSet.csv")
 
 #Making a copy of MentalHealth to make numerical values from categorical to implement KNN
 MentalHealth_copy <- MentalHealth
