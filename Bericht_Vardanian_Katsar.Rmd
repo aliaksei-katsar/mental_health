@@ -14,7 +14,7 @@ library(knitr)
 library(kableExtra)
 library(class)
 library(fastDummies)
-MentalHealth = read_csv("MentalHealthDataSet.csv")
+MentalHealth = read_csv("data/MentalHealthDataSet.csv")
 ```
 
 ## Einleitung
