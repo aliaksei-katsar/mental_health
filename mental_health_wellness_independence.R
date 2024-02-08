@@ -5,7 +5,7 @@ MentalHealth = read_csv("MentalHealthDataSet.csv")
 
 #Finding total mental health wellness of each person by calculation the amount of bad factors that he/she has
 MentalHealth_wellness <- MentalHealth %>% 
-  mutate(Mental_Unwellness = rowSums(select(., -Coping_Struggles, -Work_Interest, -Mental_Health_History, -Changes_Habits) == "Yes") +
+  mutate(Mental_Unwellness = rowSums(select(., -Coping_Struggles, -Work_Interest, -Mental_Health_History) == "Yes") +
                          rowSums(select(.,Coping_Struggles,Work_Interest) == "No") + 
                          rowSums(select(., Mood_Swings) == "High") +
                          rowSums(. == "Maybe") / 2 +
