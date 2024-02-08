@@ -305,7 +305,6 @@ Anhand der p-Werten sieht man klar, dass Mental_Unwellness ist (mit Konfidenz ~ 
 
 Zu guter letzt haben wir in "KNN.R" Skript auch den KNN-Algorithmus an unseren Daten ausprobiert 
 ```{r, echo=FALSE}
-MentalHealth = read_csv("MentalHealthDataSet.csv",show_col_types = FALSE)
 MentalHealth_copy <- MentalHealth
 MentalHealth_copy$Gender <- ifelse(MentalHealth_copy$Gender == "Male", 1, 0)
 MentalHealth_copy$Mental_Health_History <- ifelse(MentalHealth_copy$Mental_Health_History == "Yes", 1, 0)
