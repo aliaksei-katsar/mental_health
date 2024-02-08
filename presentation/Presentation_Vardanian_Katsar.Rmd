@@ -15,7 +15,7 @@ library(kableExtra)
 library(class)
 library(fastDummies)
 library(gridExtra)
-MentalHealth = read_csv("data/MentalHealthDataSet.csv")
+MentalHealth = read_csv("../data/MentalHealthDataSet.csv")
 ```
 
 ## Datensatz
@@ -125,7 +125,7 @@ grid.arrange(plott1, plott2, ncol = 2)
 
 ![](ChiSq.jpg)
 
-## Chi-Quadrat Test
+## Kontingenztabelle mit den erwarteten Häufigkeiten
 ![](table.jpg)
 
 ## 
@@ -181,31 +181,37 @@ grid.arrange(plott1, plott2, nrow = 2)
 
 ```
 
-## Fisher's Tests. Einfluss des Alters auf Wohlbefinden
+## Einfluss des Alters auf Wohlbefinden
 ```{r, echo=FALSE}
 
-fisher.test(MentalHealth_wellness$Age, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
+MentalHealth_wellness$Mental_Unwellness <- ifelse(MentalHealth_wellness$Mental_Unwellness > 4, 1, 0)
+
+#Making chisq tests
+chisq.test(MentalHealth_wellness$Age, MentalHealth_wellness$Mental_Unwellness)
+
 
 ```
 
 ## Einfluss des Geschlechts auf Wohlbefinden
 ```{r, echo=FALSE}
 
-fisher.test(MentalHealth_wellness$Gender, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
+chisq.test(MentalHealth_wellness$Gender, MentalHealth_wellness$Mental_Unwellness)
 
 ```
 
 ## Einfluss der Tätigkeit auf Wohlbefinden
 ```{r, echo=FALSE}
 
-fisher.test(MentalHealth_wellness$Occupation, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
+chisq.test(MentalHealth_wellness$Occupation, MentalHealth_wellness$Mental_Unwellness)
+
 
 ```
 
 ## Einfluss der vorherigen psychischen Problem 
 ```{r, echo=FALSE}
 
-fisher.test(MentalHealth_wellness$Mental_Health_History, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
+chisq.test(MentalHealth_wellness$Mental_Health_History, MentalHealth_wellness$Mental_Unwellness)
+
 
 ```
 

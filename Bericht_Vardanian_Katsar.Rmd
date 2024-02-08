@@ -286,20 +286,19 @@ ggplot(MentalHealth, aes(x = MentalHealth$Social_Weakness, fill = Age)) +
 
 ```
 
-Anschließend zu Unabhängigkeiten müssen wir anschauen, welche von "Hintergrunds"-Variablen (Age, Gender, Occupation, Mental_History) direkt für das Wohlbefinden (oder Unwohlbefinden) verantwortlich sind. Also, noch ein bisschen Tests in "mental_health_wellness_independence.R" Skript. Hier haben wir aber beim Chi-Quadrat Tests eine Warning "Chi-squared approximation may be incorrect" bekommen, deswegen führen wir daneben auch eine "verbesserte Version des Chi-Quadrat Tests", nähmlich den Fisher's Exakt Test. Den erklären wir aber hier nicht, man kann über Fisher's Test auch im Buch von Fahrmeier lesen (Abschnitt 11.2.3): https://link.springer.com/book/10.1007/978-3-662-50372-0
+Anschließend zu Unabhängigkeiten müssen wir anschauen, welche von "Hintergrunds"-Variablen (Age, Gender, Occupation, Mental_History) direkt für das Wohlbefinden (oder Unwohlbefinden) verantwortlich sind. Also, noch ein bisschen Tests in "mental_health_wellness_independence.R" Skript. Hier haben wir aber bei Chi-Quadrat Tests eine Warning "Chi-squared approximation may be incorrect" bekommen. Um das zu bewältigen, haben wir unsere numerische Variable "Mental_Unwellness" in kathegorische umgewandelt, wobei alle Werte von Mental_Unwellness, die größer als 4 sind, werden als "schlechter psychisher Zustand" interpritiert und die andere als "normaler psychisher Zustand".
 
-Die Fisher's Test haben die folgende Resultaten:
+Die Tests haben die folgende Resultaten:
 ```{r, echo=FALSE}
-fisher.test(MentalHealth_wellness$Age, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
+MentalHealth_wellness$Mental_Unwellness <- ifelse(MentalHealth_wellness$Mental_Unwellness > 4, 1, 0)
 
-fisher.test(MentalHealth_wellness$Gender, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
-
-fisher.test(MentalHealth_wellness$Occupation, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
-
-fisher.test(MentalHealth_wellness$Mental_Health_History, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
-
+#Making chisq tests
+chisq.test(MentalHealth_wellness$Age, MentalHealth_wellness$Mental_Unwellness)
+chisq.test(MentalHealth_wellness$Gender, MentalHealth_wellness$Mental_Unwellness)
+chisq.test(MentalHealth_wellness$Occupation, MentalHealth_wellness$Mental_Unwellness)
+chisq.test(MentalHealth_wellness$Mental_Health_History, MentalHealth_wellness$Mental_Unwellness)
 ```
-Anhand der p-Werten sieht man klar, dass Mental_Unwellness ist (mit Konfidenz ~ 100% !) abhängig von Mental_Health_History und mit großen Sicherheit kann man behaupten, dass Mental_Unwellness unabhängig von Age, Gender und Occupation ist.
+Anhand der p-Werten sieht man klar, dass MentalHealth_wellness ist abhängig von Mental_Health_History und mit großen Sicherheit kann man behaupten, dass MentalHealth_wellness unabhängig von Age, Gender und Occupation ist.
 
 
 
