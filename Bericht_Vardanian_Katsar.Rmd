@@ -1,0 +1,330 @@
+---
+title: "Analyse des Mental Health Datensatzes"
+author: "Aliaksei Katsar, Yevheniia Vardanian"
+output: html_document
+date: "2024-02-07"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(class)
+library(fastDummies)
+MentalHealth = read_csv("MentalHealthDataSet.csv")
+```
+
+## Einleitung
+
+In diesem Bericht analysieren wir einen Datensatz aus dem Data-Science-Plattform "Kaggle". 
+
+Link: https://www.kaggle.com/datasets/shashwatwork/depression-and-mental-health-data-analysis
+
+Der Datensatz enthält Informationen über 824 Personen, und zwar ihre demografische Merkmale und Antworten auf verschiedene Fragen, die hilfreich für Schlussfolgerungen über ihre psychischen Gesundheit sein können. Die Daten wurden während Corona-Pandemie in 2020 gesammelt und representieren damit den Einfluss von der durch Quarantäne verursachten Lebensänderungen auf das psychische Wohlbefinden.
+Unser Ziel ist vor allem, Zusammenhänge zwischen den verschiedenen Faktoren zu finden und den Einblick über das Wohlbefinden von befragten zu bekommen. Am Ende wollen wir auch eine Prognose aufstellen, wie die neu angegebene Person mit bestimmten Hintergrund auf die in unserem Datensatz behandelte Fragen antworten würde.
+
+Wir werfen einen ersten Blick auf den Datensatz:
+
+```{r datensatz, echo=FALSE, results='asis'}
+kable(head(MentalHealth))
+
+```
+usw. nach unten...
+
+
+Wir arbeiten also mit 13 kathegorischen Variablen:
+
+Age(16-20/20-25/25-30/30-above)
+
+Gender(Male/Female)
+
+Occupation(Student/Corporate/Business/Housewife/Others)
+
+Days_Indoors(Go out every day/1-14 days/15-30 days/31-60 days/More that 2 Months) [Wie viele Tage haben Sie während der Quarantäne zu Hause verbracht?]
+
+Growing_Stress(Yes/No) [Nimmt Ihr Stress von Tag zu Tag zu?]
+
+Quarantine_Frustration(Yes/Maybe/No) [Gab es bei Ihnen in den ersten zwei Wochen der Quarantäne Frustrationen?]
+
+Changes_Habits(Yes/Maybe/No) [Haben Sie große Veränderungen in Ihren Ess- und Schlafgewohnheiten festgestellt?]
+
+Mental_Health_History(Yes/No) [Hatten Sie in der Vergangenheit psychische Probleme?]
+
+Weight_Change(Yes/Maybe/No) [Hat Ihr Körpergewicht während der Quarantäne verändert?]
+
+Mood_Swings(Low/Medium/High) [Haben Sie während der Quarantäne extreme Stimmungsschwankungen erlebt?]
+
+Coping_Struggles(Yes/Maybe/No) [Bewältigen Sie die täglichen Herausforderungen erfolgreich?]
+
+Work_Interest(Yes/No) [Haben Sie immer noch Interesse an Ihrer Arbeit?]
+
+Social_Weakness(Yes/No) [Fühlen Sie sich im Umgang mit anderen geistig schwach?]
+
+## Explorative Datenanalyse
+
+```{r torte, echo=FALSE, results='asis'}
+df <- data.frame(
+  Gender = MentalHealth$Gender
+)
+ggplot(df, aes(x = "", fill = Gender)) +
+  geom_bar(width = 1, color = "white") +
+  coord_polar("y", start = 0) +
+  labs(title = "Verteilung der Geschlechter", fill = "Gender") +
+  theme_void() +
+  theme(legend.position = "right")
+```
+```{r torte2, echo=FALSE, results='asis'}
+df2 <- data.frame(
+  Occupation = MentalHealth$Occupation
+)
+ggplot(df2, aes(x = "", fill = Occupation)) +
+  geom_bar(width = 1, color = "white") +
+  coord_polar("y", start = 0) +
+  labs(title = "Verteilung der Tätigkeiten", fill = "Occupation") +
+  theme_void() +
+  theme(legend.position = "right")
+```
+```{r torte3, echo=FALSE, results='asis'}
+df3 <- data.frame(
+  Age = MentalHealth$Age
+)
+ggplot(df3, aes(x = "", fill = Age)) +
+  geom_bar(width = 1, color = "white") +
+  coord_polar("y", start = 0) +
+  labs(title = "Verteilung des Alters", fill = "Age") +
+  theme_void() +
+  theme(legend.position = "right")
+```
+```{r torte4, echo=FALSE, results='asis'}
+df4 <- data.frame(
+  MentalHistory = MentalHealth$Mental_Health_History
+)
+ggplot(df4, aes(x = "", fill = MentalHistory)) +
+  geom_bar(width = 1, color = "white") +
+  coord_polar("y", start = 0) +
+  labs(title = "Mental health history Verteilung", fill = "MentalHistory") +
+  theme_void() +
+  theme(legend.position = "right")
+```
+
+Anhand Tortendiagrammen sieht man, dass der Datensatz wirklich representativ ist, da alle "Hintergrunds"-Variablen ungefähr gleichverteilt sind.
+
+Um einen Einblick über das allgemeine Wohlbefinen von Befragten zu bekommen, ergänzen wir unseren Datensatz mit einer zusätzlichen Variable "Mental_Unwellness", die numerisch als die Summe von allen "negativen" Antworten jeder Person dargestellt wird. (ob Antwort "negativ" ist entscheiden wir intuitiv, z.B.bei "Growing stress" ist "Yes" "negativ" und bei "Work interest" ist "No" "negativ", alle Mittelwerte wie "Maybe" oder "Medium" zählen wir mit dem Faktor 1/2)
+
+Der ergänzte Datensatz sieht dann so aus:
+
+```{r datensatz2, echo=FALSE, results='asis'}
+MentalHealth_wellness <- MentalHealth %>% 
+  mutate(Mental_Unwellness = rowSums(select(., -Coping_Struggles, -Work_Interest, -Mental_Health_History, -Changes_Habits) == "Yes") +
+                         rowSums(select(.,Coping_Struggles,Work_Interest) == "No") + 
+                         rowSums(select(., Mood_Swings) == "High") +
+                         rowSums(. == "Maybe") / 2 +
+                         rowSums(select(., Mood_Swings) == "Medium") / 2)
+kable(head(MentalHealth_wellness))
+
+```
+usw. nach unten...
+
+
+Natürlich ist es anzuschauen, wie die "Mental_Unwellness" verteilt ist. Dazu erstellen wir erst ein Histogramm und...
+
+```{r histo, echo=FALSE}
+ggplot(MentalHealth_wellness, aes(x = Mental_Unwellness)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Distribution of Psychological Unwellness",
+       x = "Psychological Unwellness",
+       y = "Count") +
+  theme_minimal()
+```
+
+...die bekannte Glocke fällt sofort in die Augen! Noch offensichtlicher wird der Fazit, wenn wir uns die Dichte plotten lassen. Um die Vermutungen anschaulich zu prüfen, erstellen wir eine Normal(mean, sd^2)-verteilte Zufallsvariable mit Erwatungswert gleich dem empirischen Mittel und Varianz gleich dem empirischen Varianz (von "Mental_Unwellness") und plotten ihre Dichte zusammen mit der Dichte von "Mental_Unwellness"
+
+```{r normdensity, echo=TRUE}
+normal_density <- data.frame(x = seq(min(MentalHealth_wellness$Mental_Unwellness), max(MentalHealth_wellness$Mental_Unwellness), length = 1000),
+                             y = dnorm(seq(min(MentalHealth_wellness$Mental_Unwellness), max(MentalHealth_wellness$Mental_Unwellness), length = 1000), mean = mean(MentalHealth_wellness$Mental_Unwellness), sd = sd(MentalHealth_wellness$Mental_Unwellness)))
+
+```
+```{r normVersusempirisch, echo=FALSE}
+ggplot(MentalHealth_wellness, aes(x = Mental_Unwellness)) +
+  geom_density(fill = "blue", alpha = 0.7) +
+  geom_line(data = normal_density, aes(x = x, y = y), color = "red", linewidth = 1) +
+  labs(title = "Density Plot of Psychological Unwellness with Normal Distribution Overlay",
+       x = "Psychological Unwellness",
+       y = "Density") +
+  theme_minimal()
+```
+
+Die Beobachtung zeigt uns, dass die "Mental_Unwellness" ungefähr normalverteilt ist, salopp zu sagen, die Mehrheit von Befragten fühlt sich nicht besonders gut und nicht besonders schlecht, also normal:) 
+
+Bei Yes/No Variablen liegt natürlicherweise eine Binomialverteilung vor, das haben wir in "maximumLikelyhood.R" Skript auf dem Beispiel von "Work_Interest" genauer behandelt.
+
+## Statistische Methoden
+
+Jetzt kommen wir zu dem zentralen Punkt unseres Projekts - Unabhängigkeitsanalyse. Die statistische Methode, die wir dazu gewählt haben heißt Chi-Quadrat-Unabhängigkeitstest. Das ist ein Hypothesentest, der verwendet wird, um festzustellen, ob ein Zusammenhang zwischen zwei kategorischen Variablen besteht.
+
+Die Methode basiert auf der Annahme, dass die beobachteten Häufigkeiten in einer Kontingenztabelle mit den erwarteten Häufigkeiten übereinstimmen, wenn die beiden Variablen voll unabhängig voneinander sind. Der Chi-Quadrat-Test vergleicht die beobachteten Häufigkeiten mit den erwarteten Häufigkeiten und berechnet eine Chi-Quadrat-Teststatistik. Diese Statistik gibt an, wie gut die beobachteten Daten zu den erwarteten Daten passen.
+
+Der Test funktioniert folgendermaßen:
+
+Nullhypothese (H0): Die beiden Variablen X und Y sind unabhängig voneinander.
+
+Alternativhypothese (H1): Die beiden Variablen X und Y sind nicht unabhängig voneinander.
+
+1. Die beobachteten Häufigkeiten werden in einer k kreuz m Kontingenztabelle dargestellt, die die Häufigkeit des Auftretens jeder Kombination von Ausprägungen der Variablen X und Y im Datensatz zeigt.
+
+2. Unter der Annahme, dass die Nullhypothese wahr ist (d.h., X und Y sind unabhängig), werden die erwarteten Häufigkeiten für jede Zelle der Kontingenztabelle berechnet.
+
+3. Die Chi-Quadrat-Statistik wird berechnet, indem die quadrierten Differenzen zwischen den beobachteten und erwarteten Häufigkeiten normiert und summiert werden.
+
+4. Die berechnete Statistik wird mit dem (1-a)Quantil der Chi-Quadrat-Verteilung mit (k-1) kreuz (m-1) Freiheitsgraden verglichen, wobei k die Anzahl der Zeilen und m die Anzahl der Spalten der Kontingenztabelle ist und a-Signifikanzniveau des Test. (z.B. = 5%). Falls die größer ist, wird die Nullhypothese verworfen. (Besteht also ein Zusammenhang zwisschen den Variablen X und Y)
+
+Mehr dazu kann man in folgendem Buch (Abschnitt 11.4.1) lesen: https://link.springer.com/book/10.1007/978-3-662-50372-0
+oder im Wikepedia: https://de.wikipedia.org/wiki/Chi-Quadrat-Test
+
+Unter in der Einleitung gestellten Zielen war auch die Prognose aufzustellen. Das versuchen wir unter der Verwendung von sogenannten maschineller Lernalgorithmus KNN(k-Nearest Neighbors) zu machen. 
+Der basiert auf der Annahme, dass ähnliche Fälle in der Nähe voneinander liegen. Im KNN-Algorithmus gibt es keine explizite Trainingsphase. Die Daten werden einfach gespeichert, um später für Vorhersagen verwendet zu werden. Um eine Vorhersage für einen neuen Datenpunkt zu treffen, wird zunächst die Ähnlichkeit zwischen dem neuen Datenpunkt und den vorhandenen Datenpunkten im Datensatz berechnet. Die Ähnlichkeit wird mit einer bestimmten Metrik gemessen. (deswegen ist KNN üblicherweise nur für numerische Daten zu verwenden, wir haben aber unsere kategorische in numerische umgewandelt)
+
+Der Haupthyperparameter des KNN-Algorithmus ist k, die Anzahl der Nachbarn, die berücksichtigt werden, der soll groß genug für die Analyse sein, aber nicht zu groß, um Überanpassung zu vermeiden. Die Wahl eines geeigneten k-Wertes ist entscheidend für die Leistung des Algorithmus.
+
+Mehr über KNN (Abschnitt 5.2.1) und Machine Learning insgesamt kann man in diesem Buch lesen: https://link.springer.com/chapter/10.1007/978-3-031-32879-4_5
+
+
+## Ergebnisse und Schlussfolgerungen
+
+In "age_social_weakness_independence.R" Skript haben wir einen Chi-Quadrat-Unabhängigkeitstest für den Variablen "Age" und "Social_Weakness" von Anfang an konstruiert und durchgeführt. Hier sind die Kontingenztabelle und die entsprechende erwartete Häufigkeiten für jede Zelle der Kontingenztabelle (die "Total" Zeile und Spalte sind nur für die angenehme Berechning des Statistiks, gehören also formal nicht zur Kontingenztabelle):
+
+```{r chisq, echo=FALSE}
+#Generating table with amount of people by age who have social weakness(yes/no/maybe)
+age_social_weakness_table <- MentalHealth %>%
+  count(Age, Social_Weakness) %>%
+  pivot_wider(names_from = Social_Weakness, values_from = n, values_fill = 0)
+
+#Extending the table with total amount of people with the same age and total amount of people with the same social weakness 
+age_social_weakness_table <- age_social_weakness_table %>%
+  mutate(Total = rowSums(select(.,"Maybe", "No", "Yes"))) %>%
+  bind_rows(summarise(., across(where(is.numeric), sum),
+                      across(where(is.character), ~'Total')))
+
+#Finding the expected frequencies table if Variables Age and Social_Weakness are independent 
+v1 <- data.matrix(age_social_weakness_table[1:4,5])
+v2 <- data.matrix(age_social_weakness_table[5,2:4])
+exp_age_social_weakness_table <- v1 %*% v2 / as.numeric(age_social_weakness_table[5,5])
+kable(age_social_weakness_table)
+kable(exp_age_social_weakness_table)
+```
+
+Folgendermaßen wird dann die Chi-Quadrat-Statistik berechnet:
+```{r, echo=TRUE}
+v <- data.matrix(age_social_weakness_table[1:4,2:4])
+X <- sum((exp_age_social_weakness_table - v) ^ 2 / exp_age_social_weakness_table)
+```
+```{r, echo=FALSE}
+cat("X = ",X)
+```
+Um die Entscheidung über Unabhängigkeit zu treffen, vergleichen wir den X Wert mit dem entsprechenden Quantil des Chi-Quadrats-Verteilung
+```{r, echo=TRUE}
+df <- (n_distinct(MentalHealth$Age) - 1) * (n_distinct(MentalHealth$Social_Weakness) - 1)
+decision <- qchisq(0.95, df, lower.tail = TRUE) > X
+```
+```{r, echo=FALSE}
+cat("qchisq(o.95, df) = ",qchisq(0.95, df, lower.tail = TRUE))
+cat("decision =", decision)
+```
+Die Nullhypothese wird also verworfen, daraus können wir schließen, dass die Variablen "Age" und "Social_Weakness" nicht unabhängig sind. (Unter Berücksichtigung von W-keit des Fehlers erster Art)
+
+In R gibt es aber ein fertiges Befehl für Chi-Quadrat Unabhängigkeitstest:
+```{r, echo=TRUE}
+chisq.test(MentalHealth$Age, MentalHealth$Social_Weakness)
+```
+
+Wir sehen, dass es den gleichen Wert für X ausgibt zu dem, der wir per Hand berechnet haben, und dazu noch den p-Wert. Ein kleiner p-Wert (< 0,05= Signifikanzniveau) weist auch darauf hin, dass die Nullhypothese abgelehnt werden sollte, was darauf hindeutet, dass es einen Zusammenhang zwischen den Variablen "Age" und "Social_Weakness" gibt.
+
+
+Wir wollen alle Zusammenhänge zwischen den Variablen untersuchen, dazu haben wir in "independence_tables.R" Skript die 13 kreuz 13 Tabelle mit den Resultaten von Chi-Quadrat Unabhängigkeitstesten erstellt:
+```{r, echo=FALSE}
+Xsq_value_table_independence <- 
+  matrix(NA, nrow = ncol(MentalHealth), ncol = ncol(MentalHealth))
+rownames(Xsq_value_table_independence) <- 
+  colnames(Xsq_value_table_independence) <- 
+  colnames(MentalHealth)
+for (i in 1:(ncol(MentalHealth) - 1)) {
+  for (j in (i + 1):ncol(MentalHealth)) {
+    
+    chi2_result <- chisq.test(MentalHealth[[i]], 
+                                     MentalHealth[[j]])
+    
+    Xsq_value_table_independence[i, j] <- chi2_result$statistic < qchisq(0.95, chi2_result$parameter, lower.tail = TRUE)
+    Xsq_value_table_independence[j, i] <- Xsq_value_table_independence[i, j]
+  }
+}
+kable(Xsq_value_table_independence)
+```
+TRUE steht dabei für die Unabhängigkeit (Nullhypothese wurde niht abgelehnt) und FALSE für die Abhängigkeit.
+
+Aus der Tabelle ist rauszulesen, dass laut dem Chi-Quadrat-Test unser Datensatz nur zwei Paaren abhängiger Zufallsvariablen besitzt, und die sind Age/Social_Weakness (schon oben untersucht) und Gender/Coping_Struggles. 
+[Natürlich ist die Tabelle symmetrisch]
+
+Die Abhängigkeit kann man gut auch mithilfe Balkendiagramms sehen
+```{r, echo=FALSE}
+ggplot(MentalHealth, aes(x = MentalHealth$Coping_Struggles, fill = Gender)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Coping Struggles by Gender",
+       x = "Coping",
+       y = "Count") +
+  theme_minimal()
+
+ggplot(MentalHealth, aes(x = MentalHealth$Social_Weakness, fill = Age)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Social Weakness by Age",
+       x = "Social Weakness",
+       y = "Count") +
+  theme_minimal()
+
+
+```
+
+Anschließend zu Unabhängigkeiten müssen wir anschauen, welche von "Hintergrunds"-Variablen (Age, Gender, Occupation, Mental_History) direkt für das Wohlbefinden (oder Unwohlbefinden) verantwortlich sind. Also, noch ein bisschen Tests in "mental_health_wellness_independence.R" Skript. Hier haben wir aber beim Chi-Quadrat Tests eine Warning "Chi-squared approximation may be incorrect" bekommen, deswegen führen wir daneben auch eine "verbesserte Version des Chi-Quadrat Tests", nähmlich den Fisher's Exakt Test. Den erklären wir aber hier nicht, man kann über Fisher's Test auch im Buch von Fahrmeier lesen (Abschnitt 11.2.3): https://link.springer.com/book/10.1007/978-3-662-50372-0
+
+Die Fisher's Test haben die folgende Resultaten:
+```{r, echo=FALSE}
+fisher.test(MentalHealth_wellness$Age, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
+
+fisher.test(MentalHealth_wellness$Gender, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
+
+fisher.test(MentalHealth_wellness$Occupation, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
+
+fisher.test(MentalHealth_wellness$Mental_Health_History, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
+
+```
+Anhand der p-Werten sieht man klar, dass Mental_Unwellness ist (mit Konfidenz ~ 100% !) abhängig von Mental_Health_History und mit großen Sicherheit kann man behaupten, dass Mental_Unwellness unabhängig von Age, Gender und Occupation ist.
+
+
+
+Zu guter letzt haben wir in "KNN.R" Skript auch den KNN-Algorithmus an unseren Daten ausprobiert 
+```{r, echo=FALSE}
+MentalHealth = read_csv("MentalHealthDataSet.csv",show_col_types = FALSE)
+MentalHealth_copy <- MentalHealth
+MentalHealth_copy$Gender <- ifelse(MentalHealth_copy$Gender == "Male", 1, 0)
+MentalHealth_copy$Mental_Health_History <- ifelse(MentalHealth_copy$Mental_Health_History == "Yes", 1, 0)
+MentalHealth_copy$Age <- dummy_cols(MentalHealth_copy$Age)[-1]
+MentalHealth_copy$Occupation <- dummy_cols(MentalHealth_copy$Occupation)[-1]
+MentalHealth_copy$Days_Indoors <- dummy_cols(MentalHealth_copy$Days_Indoors)[-1]
+MentalHealth_copy$Coping_Struggles <- as.integer(factor(MentalHealth_copy$Coping_Struggles, levels = c("No", "Yes")))
+data_train <- MentalHealth_copy[, c(1:4, 8)]
+data_test <- MentalHealth_copy[, c(1:4, 8)]
+classification <- MentalHealth_copy$Coping_Struggles
+```
+```{r, echo=TRUE}
+prediction <- knn(train = data_train, test = data_test, cl = classification, k = round(sqrt(ncol(MentalHealth))))
+```
+und sind zum "Success rate" von 
+```{r, echo=FALSE}
+cat(sum(prediction == classification) / nrow(MentalHealth))
+```
+gekommen.
+
+## Fazit
+In diesem Projekt haben wir den Mental Health Datensatz analysiert und einige interessante Erkenntnisse gewonnen. Es gibt viele weitere Analysen, die durchgeführt werden könnten, je nach den spezifischen Fragestellungen und Zielen.
