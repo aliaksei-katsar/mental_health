@@ -11,18 +11,12 @@ MentalHealth_wellness <- MentalHealth %>%
                          rowSums(. == "Maybe") / 2 +
                          rowSums(select(., Mood_Swings) == "Medium") / 2)
 
-#Making chisq and fisher tests
+#Checking if a person has a "good" mental wellness(amount of bad factors > 4) or not( <= 4)
+MentalHealth_wellness$Mental_Unwellness <- ifelse(MentalHealth_wellness$Mental_Unwellness > 4, 1, 0)
+
+#Making chisq tests
 chisq.test(MentalHealth_wellness$Age, MentalHealth_wellness$Mental_Unwellness)
-fisher.test(MentalHealth_wellness$Age, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
-
 chisq.test(MentalHealth_wellness$Gender, MentalHealth_wellness$Mental_Unwellness)
-fisher.test(MentalHealth_wellness$Gender, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
-
 chisq.test(MentalHealth_wellness$Occupation, MentalHealth_wellness$Mental_Unwellness)
-fisher.test(MentalHealth_wellness$Occupation, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
-
 chisq.test(MentalHealth_wellness$Days_Indoors, MentalHealth_wellness$Mental_Unwellness)
-fisher.test(MentalHealth_wellness$Days_Indoors, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)
-
 chisq.test(MentalHealth_wellness$Mental_Health_History, MentalHealth_wellness$Mental_Unwellness)
-fisher.test(MentalHealth_wellness$Mental_Health_History, MentalHealth_wellness$Mental_Unwellness, simulate.p.value = TRUE)

@@ -2,6 +2,14 @@
 library(tidyverse)
 MentalHealth = read_csv("data/MentalHealthDataSet.csv")
 
+#Finding total mental health wellness of each person by calculation the amount of bad factors that he/she has
+MentalHealth_wellness <- MentalHealth %>% 
+  mutate(Mental_Unwellness = rowSums(select(., -Coping_Struggles, -Work_Interest, -Mental_Health_History) == "Yes") +
+           rowSums(select(.,Coping_Struggles,Work_Interest) == "No") + 
+           rowSums(select(., Mood_Swings) == "High") +
+           rowSums(. == "Maybe") / 2 +
+           rowSums(select(., Mood_Swings) == "Medium") / 2)
+
 #Distribution of Psychological Unwellness in histogram
 ggplot(MentalHealth_wellness, aes(x = Mental_Unwellness)) +
   geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
