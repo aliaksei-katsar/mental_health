@@ -118,7 +118,7 @@ Der ergänzte Datensatz sieht dann so aus:
 
 ```{r datensatz2, echo=FALSE, results='asis'}
 MentalHealth_wellness <- MentalHealth %>% 
-  mutate(Mental_Unwellness = rowSums(select(., -Coping_Struggles, -Work_Interest, -Mental_Health_History, -Changes_Habits) == "Yes") +
+  mutate(Mental_Unwellness = rowSums(select(., -Coping_Struggles, -Work_Interest, -Mental_Health_History) == "Yes") +
                          rowSums(select(.,Coping_Struggles,Work_Interest) == "No") + 
                          rowSums(select(., Mood_Swings) == "High") +
                          rowSums(. == "Maybe") / 2 +
