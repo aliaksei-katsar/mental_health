@@ -242,3 +242,4 @@ cat("success rate =", sum(prediction == classification) / nrow(MentalHealth))
 
 ## 
 #####                   VIELEN DANK FÜR DIE AUFMERKSAMKEIT!
+https://github.com/aliaksei-katsar/mental_health.git
